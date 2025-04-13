@@ -216,3 +216,69 @@ Cask is a trademark of Cask Data, Inc. All rights reserved.
 
 Apache, Apache HBase, and HBase are trademarks of The Apache Software Foundation. Used with
 permission. No endorsement by The Apache Software Foundation is implied by the use of these marks.
+
+Enhancement: Byte Size and Time Duration Support
+As part of an enhancement assignment, support has been added to Wrangler for parsing and aggregating byte size and time duration units directly within transformation recipes.
+
+✨ New Token Types
+1. BYTE_SIZE
+-Parses human-readable byte size values such as:
+
+ "10KB", "1.5MB", "2GB", "500B"
+
+Internally converts to bytes for calculations.
+
+2. TIME_DURATION
+-Parses human-readable time durations such as:
+
+"250ms", "2.5s", "3min", "1h"
+
+Internally converts to milliseconds or nanoseconds.
+
+These new token types allow users to work with size and duration values more naturally in Wrangler recipes.
+
+📊 New Directive: aggregate-stats
+A new directive aggregate-stats was introduced to demonstrate the use of the above types and provide aggregation capabilities.
+
+➕ Directive Syntax
+
+aggregate-stats :<byteSizeColumn> :<timeDurationColumn> <totalSizeOutputColumn> <totalTimeOutputColumn>
+📘 Example
+-aggregate-stats :data_transfer_size :response_time total_size_mb total_time_sec
+✅ Functionality
+Aggregates all data_transfer_size values, converting them to bytes internally and summing them.
+
+Aggregates all response_time values, converting them to nanoseconds or milliseconds.
+
+Outputs the totals (or averages in future enhancements) in the desired target columns.
+
+✅ Unit Support Details
+Type	Units Supported
+Byte Sizes	B, KB, MB, GB, TB
+Time Durations	ms, s, min, h
+Unit parsing is case-insensitive (e.g., 10kb, 10KB, 10Kb all work).
+
+🧪 Testing
+Unit tests have been added for:
+
+ByteSize and TimeDuration parsing.
+
+Recipe parsing with new token types.
+
+aggregate-stats directive execution and aggregation logic.
+
+Example assertion format:
+
+Assert.assertEquals(1, results.size());
+Assert.assertEquals(expectedTotalSizeInMB, results.get(0).getValue("total_size_mb"), 0.001);
+Assert.assertEquals(expectedTotalTimeInSeconds, results.get(0).getValue("total_time_sec"), 0.001);
+📂 Files Updated
+Grammar: Directives.g4 (new rules for BYTE_SIZE and TIME_DURATION)
+
+API: ByteSize.java, TimeDuration.java
+
+Directive: AggregateStats.java
+
+Tests: Unit and integration tests for all new components
+
+Docs: This section added to README.md
